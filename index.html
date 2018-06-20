@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edge</title>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@2.5.16/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+</head>
+<body>
+    <div class="container" style="margin-top: 50px">
+        <b-row id="app">
+            <b-alert variant="danger"
+                     dismissible
+                     :show="error"
+                     @dismissed="error=false">
+                {{ errorMessage }}
+            </b-alert>
+
+            <b-container fluid>
+                <b-row class="my-1">
+                    <b-col sm="1"><label for="dateFrom">From:</label></b-col>
+                    <b-col sm="4">
+                        <b-form-input id="dateFrom"
+                                      v-model="search.dateFrom"
+                                      type="date"
+                                      :state="checkDateFrom"
+                                      aria-describedby="inputLiveFeedbackDateFrom"
+                                      placeholder="Enter your name"></b-form-input>
+                        <b-form-invalid-feedback id="inputLiveFeedbackDateTo">
+                            Enter date from
+                        </b-form-invalid-feedback>
+                    </b-col>
+                </b-row>
+                <b-row class="my-2">
+                    <b-col sm="1"><label for="dateTo">To:</label></b-col>
+                    <b-col sm="4">
+                        <b-form-input id="dateTo"
+                                      v-model="search.dateTo"
+                                      type="date"
+                                      :state="checkDateTo"
+                                      aria-describedby="inputLiveFeedbackDateFrom"
+                                      placeholder="Enter your name"></b-form-input>
+                        <b-form-invalid-feedback id="inputLiveFeedbackDateFrom">
+                            Enter date to
+                        </b-form-invalid-feedback>
+                    </b-col>
+                </b-row>
+                <b-row class="my-3">
+                    <b-col sm="1"><label for="user">User:</label></b-col>
+                    <b-col sm="4">
+                        <b-form-select id="user" v-model="search.user" :options="users" size="sm" />
+                    </b-col>
+                </b-row>
+                <b-row class="my-4">
+                    <b-col sm="1"><label for="user">Country:</label></b-col>
+                    <b-col sm="4">
+                        <b-form-select id="country" v-model="search.country" :options="countries" size="sm" />
+                    </b-col>
+                </b-row>
+                <b-button v-on:click="doSearch" v-bind:class="{disabled: isDisabled}" :disabled="isDisabled">Search</b-button>
+            </b-container>
+
+            <!-- Main table element -->
+            <b-table striped hover :items="items" :fields="fields" :current-page="currentPage" :per-page="perPage">
+            </b-table>
+
+            <b-pagination :total-rows="this.items.length" :per-page="perPage" v-model="currentPage" />
+            <b-form-fieldset horizontal label="Rows per page" class="col-6" :label-size="6">
+                <b-form-select :options="[{text:5,value:5},{text:10,value:10},{text:15,value:15}]" v-model="perPage">
+                </b-form-select>
+            </b-form-fieldset>
+        </div>
+    </div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            search: {
+                dateFrom: '',
+                dateTo: '',
+                country: '',
+                user: ''
+            },
+            error: false,
+            errorMessage: '',
+            items: [],
+            fields: {
+                date: {
+                    label: 'Date',
+                    sortable: true
+                },
+                successed: {
+                    label: 'Successed'
+                },
+                failed: {
+                    label: 'Failed'
+                }
+            },
+            countries: [
+                {value: "", text: "all"},
+                {value: 1, text: "Gadgabuga"},
+                {value: 3, text: "Albania"},
+                {value: 6, text: "Andorra"}
+            ],
+            users: [
+                {value: "", text: "all"},
+                {value: 1, text: "Vasia"},
+                {value: 2, text: "APetya"},
+                {value: 4, text: "APetya"},
+                {value: 3, text: "Dasha"}
+            ],
+            currentPage: 1,
+            perPage: 5
+        },
+        computed: {
+            checkDateFrom () {
+                return /^\d{4}-\d{1,2}-\d{1,2}$/.test(this.search.dateFrom)
+            },
+            checkDateTo() {
+                if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(this.search.dateTo)) {
+                    return false;
+                }
+                return this.search.dateFrom <= this.search.dateTo;
+            },
+            isDisabled() {
+                return !(/^\d{4}-\d{1,2}-\d{1,2}$/.test(this.search.dateFrom)
+                    && /^\d{4}-\d{1,2}-\d{1,2}$/.test(this.search.dateTo)
+                    && this.search.dateFrom <= this.search.dateTo);
+            }
+        },
+        methods: {
+
+            doSearch: function(){
+                var form = new FormData();
+                form.append('dateFrom', this.search.dateFrom);
+                form.append('dateTo', this.search.dateTo);
+                form.append('user', this.search.user);
+                form.append('country', this.search.country);
+                axios.post('/logs.php', form).then(response => {
+                    if (response.data.error !== undefined) {
+                        this.error = true;
+                        this.errorMessage = response.data.error;
+                        return;
+                    }
+                    this.items = response.data.logs;
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            }
+        }
+    })
+</script>
+</html>

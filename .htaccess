@@ -1,0 +1,12 @@
+IndexIgnore .htaccess */.??* *~ *# */HEADER* */README* */_vti*
+
+Options -Indexes
+
+RewriteEngine On
+
+RewriteRule ^aggregate(.*)$ aggregate.php [L,QSA]
+RewriteRule ^logs(.*)$ logs.php [L,QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_METHOD} !^POST$ [NC]
+RewriteRule ^(.*)$ index.html [L,QSA]
