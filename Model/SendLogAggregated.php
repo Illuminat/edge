@@ -26,13 +26,11 @@ class SendLogAggregated
         self::COUNTRY   => [
             'query' => ' cntId  = :country ',
             'required' => false,
-            'groupBy' => 'cntId',
             'param' => PDO::PARAM_INT
         ],
         self::USER      => [
             'query' => ' usrId  = :user ',
             'required' => false,
-            'groupBy' => 'usrId',
             'param' => PDO::PARAM_INT
         ]
     ];
