@@ -56,7 +56,7 @@ class SendLogAggregated
                 throw new \Exception('Need data:' . $key);
             }
         }
-        $sqlSelect = 'Select * FROM ' . $this->table . ' WHERE '. implode(' AND ', $where) . ' GROUP BY ' . implode( ' , ', $groupBy);
+        $sqlSelect = 'Select date, SUM(successed) as successed, SUM(failed) as failed FROM ' . $this->table . ' WHERE '. implode(' AND ', $where) . ' GROUP BY ' . implode( ' , ', $groupBy);
         $smtp = $this->db->prepare($sqlSelect);
         foreach ($bind as $key => $data) {
             $smtp->bindParam($key, $data['value'], $data['param']);
